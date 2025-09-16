@@ -33,7 +33,9 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPersonManager, PersonManager>();
+builder.Services.AddScoped<IInvoiceManager, InvoiceManager>();
 
 builder.Services.AddAutoMapper(cfg =>
 {

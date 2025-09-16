@@ -32,6 +32,11 @@ namespace Invoices.Api.Interfaces
         /// </returns>
         bool DeletePerson(int id);
 
+        /// <summary>
+        /// Vrátí osobu na základě unikátního ID v parametru
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         PersonDto? GetPersonById(int id);
     }
 }
