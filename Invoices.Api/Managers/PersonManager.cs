@@ -6,10 +6,6 @@ using Invoices.Data.Interfaces;
 
 namespace Invoices.Api.Managers
 {
-    /// <summary>
-    /// Manager vrstva obsahuje aplikační logiku spojenou s entitou Person.
-    /// Odděluje controller od přístupu k datům a umožňuje snadnější testování a údržbu.
-    /// </summary>
     public class PersonManager : IPersonManager
     {
         private readonly IPersonRepository personRepository;
@@ -23,7 +19,6 @@ namespace Invoices.Api.Managers
 
         public IEnumerable<PersonDto> GetAllPersons()
         {
-            // Vrátíme pouze aktivní (neskryté) osoby
             IEnumerable<Person> people = personRepository.GetByHidden(false);
             return mapper.Map<IEnumerable<PersonDto>>(people);
         }
@@ -38,36 +33,18 @@ namespace Invoices.Api.Managers
 
         public bool DeletePerson(int id)
         {
-            // Soft delete: nastavíme příznak Hidden = true místo fyzického smazání
-            if (HidePerson(id) is not null)
-            {
-                personRepository.SaveChanges();
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Označí osobu jako skrytou (soft delete).
-        /// Pokud osoba neexistuje, vrací null.
-        /// </summary>
-        private Person? HidePerson(int personId)
-        {
-            Person? person = personRepository.FindById(personId);
-
+            Person? person = personRepository.FindById(id);
             if (person is null)
-                return null;
+                return false;
 
-            person.Hidden = true;
-            return personRepository.Update(person);
+            if(!person.Hidden)
+            {
+                person.Hidden = true;
+                personRepository.SaveChanges();
+            }
+            return true;
         }
 
-        /// <summary>
-        /// Vrátí osobu na základě ID, pokud existuje, jinak null
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public PersonDto? GetPersonById(int id)
         {
             Person? person = personRepository.FindById(id);
@@ -75,6 +52,24 @@ namespace Invoices.Api.Managers
                 return null;
 
             return mapper.Map<PersonDto>(person);
+        }
+
+        public PersonDto? UpdatePerson(int id, PersonDto dto)
+        {
+            Person? person = personRepository.FindById(id);
+            if (person == null)
+                return null;
+
+            Person newPerson = mapper.Map<Person>(dto);
+            newPerson.IdentificationNumber = person.IdentificationNumber; //zajistí aby bylo stejné IČO, které musí být neměnné
+            newPerson.PersonId = 0;
+            newPerson.Hidden = false;
+
+            Person addedPerson = personRepository.Add(newPerson);
+            person.Hidden = true;
+            personRepository.SaveChanges();
+
+            return mapper.Map<PersonDto>(addedPerson); 
         }
     }
 }

@@ -3,10 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Invoices.Data.Repositories
 {
-    /// <summary>
-    /// Obecné (generické) úložiště pro práci s entitami v databázi
-    /// Poskytuje základní CRUD operace pro libovolný typ T
-    /// </summary>
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         protected readonly AppDbContext context;
@@ -20,18 +16,16 @@ namespace Invoices.Data.Repositories
 
         public IEnumerable<T> GetAll()
         {
-            return dbSet.ToList();
+            return dbSet.AsNoTracking().ToList();
         }
 
         public T? FindById(int id)
         {
-            // Find využívá EF cache – rychlé, ale nelze použít s dalšími podmínkami nebo Include()
             return dbSet.Find(id);
         }
 
         public T Add(T entity)
         {
-            // Entita se přidá do DbContextu, ale změny je třeba uložit SaveChanges()
             dbSet.Add(entity);
             return entity;
         }

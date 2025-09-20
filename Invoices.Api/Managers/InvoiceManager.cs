@@ -3,31 +3,33 @@ using Invoices.Api.Interfaces;
 using Invoices.Api.Models;
 using Invoices.Data.Entities;
 using Invoices.Data.Interfaces;
-using System.Collections.Generic;
 
 namespace Invoices.Api.Managers
 {
     public class InvoiceManager : IInvoiceManager
     {
         private readonly IInvoiceRepository invoiceRepository;
+        private readonly IPersonRepository personRepository;
         private readonly IMapper mapper;
-        public InvoiceManager(IInvoiceRepository invoiceRepository, IMapper mapper)
+        public InvoiceManager(IInvoiceRepository invoiceRepository, IMapper mapper, IPersonRepository personRepository)
         {
             this.invoiceRepository = invoiceRepository;
             this.mapper = mapper;
+            this.personRepository = personRepository;
         }
-        public IEnumerable<InvoiceDto> GetAllInvoices()
+        public IEnumerable<InvoiceDto> GetAllInvoices(int? buyerId, int? sellerId, string? product, decimal? minPrice, decimal? maxPrice, int limit = 3)
         {
-            IEnumerable<Invoice> invoices = invoiceRepository.GetAll();
+            IEnumerable<Invoice> invoices = invoiceRepository.GetAllInvoicesWithDetails(buyerId, sellerId, product, minPrice, maxPrice, limit);
             return mapper.Map<List<InvoiceDto>>(invoices);
         }
 
-        public InvoiceDto AddInvoice(InvoiceDto dto)
+        public InvoiceDto AddInvoice(InvoiceCreateUpdateDto dto)
         {
             Invoice invoice = mapper.Map<Invoice>(dto);
-            Invoice addedInvoice = invoiceRepository.Add(invoice);
+            Invoice createdInvoice = invoiceRepository.Add(invoice);
             invoiceRepository.SaveChanges();
-            return mapper.Map<InvoiceDto>(addedInvoice);
+
+            return mapper.Map<InvoiceDto>(invoiceRepository.GetInvoiceWithDetails(createdInvoice.InvoiceId));
         }
 
         public bool DeleteInvoice(int id)
@@ -38,16 +40,30 @@ namespace Invoices.Api.Managers
                 return false;
             }
             invoiceRepository.Delete(invoice);
+            invoiceRepository.SaveChanges();
             return true;
         }
 
-        public InvoiceDto? GetPersonById(int id)
+        public InvoiceDto? GetInvoiceById(int id)
         {
-            Invoice? invoice = invoiceRepository.FindById(id);
+            Invoice? invoice = invoiceRepository.GetInvoiceWithDetails(id);
             if (invoice is null)
                 return null;
 
             return mapper.Map<InvoiceDto>(invoice);
+        }
+
+        public InvoiceDto? UpdateInvoice(int id, InvoiceCreateUpdateDto dto)
+        {
+            Invoice? invoice = invoiceRepository.FindById(id);
+            if (invoice == null)
+                return null;
+
+            mapper.Map(dto, invoice);
+            invoiceRepository.SaveChanges();
+
+            Invoice updatedInvoice = invoiceRepository.GetInvoiceWithDetails(id)!;
+            return mapper.Map<InvoiceDto>(updatedInvoice);
         }
     }
 }

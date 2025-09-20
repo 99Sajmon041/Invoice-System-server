@@ -1,5 +1,6 @@
 ﻿using Invoices.Data.Entities;
 using Invoices.Data.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Invoices.Data.Repositories
 {
@@ -9,7 +10,7 @@ namespace Invoices.Data.Repositories
 
         public IEnumerable<Person> GetByHidden(bool hidden)
         {
-            return dbSet.Where(x => x.Hidden == hidden).ToList();
+            return dbSet.AsNoTracking().Where(x => x.Hidden == hidden).ToList();
         }
     }
 }

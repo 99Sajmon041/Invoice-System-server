@@ -4,26 +4,28 @@ using Invoices.Data.Entities;
 
 namespace Invoices.Api
 {
-    /// <summary>
-    /// Profil pro AutoMapper – definuje, jak se mají převádět objekty mezi entitami a DTO třídami.
-    /// Pomáhá oddělit databázovou vrstvu (Entity) od API vrsty (DTO)
-    /// </summary>
     public class AutoMapperProfile : Profile
     {
         public AutoMapperProfile()
         {
-            // ReverseMap() vytvoří i opačné mapování (DTO -> Entity i Entity -> DTO)
-            CreateMap<Person, PersonDto>().ReverseMap();
+            CreateMap<Person, PersonDto>();
+            CreateMap<PersonDto, Person>()
+                .ForMember(d => d.PersonId, opt => opt.Ignore())
+                .ForMember(d => d.Hidden, opt => opt.Ignore());
 
-            // Mapování z InvoiceDto do Invoice entity
+            CreateMap<Invoice, InvoiceDto>().ReverseMap();
+
             CreateMap<InvoiceDto, Invoice>()
                 .ForMember(e => e.Buyer, o => o.Ignore())
                 .ForMember(e => e.Seller, o => o.Ignore());
 
-            // Mapování Invoice do InvoiceDto DTO modelu
-            CreateMap<Invoice, InvoiceDto>()
-                .ForMember(d => d.BuyerName, o => o.MapFrom(s => s.Buyer.Name))
-                .ForMember(d => d.SellerName, o => o.MapFrom(s => s.Seller.Name));
+
+            CreateMap<InvoiceCreateUpdateDto, Invoice>()
+                .ForMember(d => d.InvoiceId, o => o.Ignore())
+                .ForMember(d => d.BuyerId, o => o.MapFrom(s => s.Buyer.PersonId))
+                .ForMember(d => d.SellerId, o => o.MapFrom(s => s.Seller.PersonId))
+                .ForMember(d => d.Seller, o => o.Ignore())
+                .ForMember(d => d.Buyer, o => o.Ignore());
         }
     }
 }

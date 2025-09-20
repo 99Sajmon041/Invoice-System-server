@@ -7,12 +7,9 @@ using System.Threading.Tasks;
 
 namespace Invoices.Data.Interfaces
 {
-    /// <summary>
-    /// Specializované rozhraní pro repozitář pracující s entitou <see cref="Invoice"/>.
-    /// Rozšiřuje obecné metody z <see cref="IRepository{T}"/> o specifické funkce pro faktury.
-    /// </summary>
     public interface IInvoiceRepository : IBaseRepository<Invoice>
     {
-
+        Invoice? GetInvoiceWithDetails(int invoiceId);
+        IEnumerable<Invoice> GetAllInvoicesWithDetails(int? buyerId, int? sellerId, string? product, decimal? minPrice, decimal? maxPrice, int limit = 3);
     }
 }
