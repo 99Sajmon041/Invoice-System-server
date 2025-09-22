@@ -9,5 +9,6 @@ namespace Invoices.Api.Interfaces
         bool DeletePerson(int id);
         PersonDto? GetPersonById(int id);
         PersonDto? UpdatePerson(int id, PersonDto dto);
+        IEnumerable<PersonStatisticsDto> GetPersonStatistics();
     }
 }

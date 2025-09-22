@@ -1,5 +1,4 @@
-﻿using Invoices.Data.Entities;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Invoices.Api.Models
 {

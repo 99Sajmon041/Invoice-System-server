@@ -19,7 +19,7 @@ namespace Invoices.Data.Entities
         public required Country Country { get; set; }
         public required string Note { get; set; }
         public bool Hidden { get; set; }
-        public ICollection<Invoice>? Purchases { get; set; }
-        public ICollection<Invoice>? Sales { get; set; }
+        public ICollection<Invoice> Purchases { get; set; } = new List<Invoice>();
+        public ICollection<Invoice> Sales { get; set; } = new List<Invoice>();
     }
 }

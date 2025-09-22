@@ -9,5 +9,7 @@ namespace Invoices.Api.Interfaces
         bool DeleteInvoice(int id);
         InvoiceDto? GetInvoiceById(int id);
         InvoiceDto? UpdateInvoice(int id, InvoiceCreateUpdateDto dto);
+        IEnumerable<InvoiceDto> GetInvoicesByIdentification(string identificationNumber, bool isBuyer, int limit = 3);
+        InvoiceStatisticsDto GetInvoiceStatistics();
     }
 }

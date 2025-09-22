@@ -65,5 +65,29 @@ namespace Invoices.Api.Managers
             Invoice updatedInvoice = invoiceRepository.GetInvoiceWithDetails(id)!;
             return mapper.Map<InvoiceDto>(updatedInvoice);
         }
+
+        public IEnumerable<InvoiceDto> GetInvoicesByIdentification(string identificationNumber, bool isBuyer, int limit = 3)
+        {
+            IEnumerable<Invoice>? invoices = new List<Invoice>();
+
+            if (isBuyer)
+                invoices = invoiceRepository.GetPurchasesByIdentification(identificationNumber.Trim(), limit);
+            else
+                invoices = invoiceRepository.GetSalesByIdentification(identificationNumber.Trim(), limit);
+
+            return mapper.Map<List<InvoiceDto>>(invoices);
+        }
+
+        public InvoiceStatisticsDto GetInvoiceStatistics()
+        {
+            IQueryable<Invoice> invoices = invoiceRepository.GetAllInvoices();
+
+            return new InvoiceStatisticsDto
+            {
+                CurrentYearSum = invoices.Where(x => x.Issued.Year == DateTime.Now.Year).Sum(x => x.Price),
+                AllTimeSum = invoices.Sum(x => x.Price),
+                InvoicesCount = invoices.Count()
+            };
+        }
     }
 }

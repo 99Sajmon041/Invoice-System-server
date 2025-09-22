@@ -1,9 +1,4 @@
 ﻿using Invoices.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invoices.Data.Interfaces
 {
@@ -11,5 +6,8 @@ namespace Invoices.Data.Interfaces
     {
         Invoice? GetInvoiceWithDetails(int invoiceId);
         IEnumerable<Invoice> GetAllInvoicesWithDetails(int? buyerId, int? sellerId, string? product, decimal? minPrice, decimal? maxPrice, int limit = 3);
+        IEnumerable<Invoice> GetSalesByIdentification(string identificationNumber, int limit = 3);
+        IEnumerable<Invoice> GetPurchasesByIdentification(string identificationNumber, int limit = 3);
+        IQueryable<Invoice> GetAllInvoices();
     }
 }

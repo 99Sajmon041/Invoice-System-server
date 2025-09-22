@@ -1,6 +1,7 @@
 ﻿using Invoices.Api.Interfaces;
 using Invoices.Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Validations;
 
 namespace Invoices.Api.Controllers
 {
@@ -56,6 +57,13 @@ namespace Invoices.Api.Controllers
                 return NotFound();
 
             return NoContent();
+        }
+
+        [HttpGet("statistics")]
+        public ActionResult<InvoiceStatisticsDto> GetStatistics()
+        {
+            InvoiceStatisticsDto invoiceStats = invoiceManager.GetInvoiceStatistics();
+            return Ok(invoiceStats);
         }
     }
 }

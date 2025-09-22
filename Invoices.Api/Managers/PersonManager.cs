@@ -71,5 +71,19 @@ namespace Invoices.Api.Managers
 
             return mapper.Map<PersonDto>(addedPerson); 
         }
+
+        public IEnumerable<PersonStatisticsDto> GetPersonStatistics()
+        {
+            IQueryable<Person> persons = personRepository.QueryAllPersons();
+            persons = persons.Where(x => !x.Hidden);
+
+            return persons.Select(x => new PersonStatisticsDto
+            {
+                PersonId = x.PersonId,
+                PersonName = x.Name,
+                Revenue = x.Sales.Sum(i => (decimal?)i.Price) ?? 0m
+            })
+            .ToList();
+        }
     }
 }

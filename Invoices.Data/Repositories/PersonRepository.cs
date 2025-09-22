@@ -12,5 +12,10 @@ namespace Invoices.Data.Repositories
         {
             return dbSet.AsNoTracking().Where(x => x.Hidden == hidden).ToList();
         }
+
+        public IQueryable<Person> QueryAllPersons()
+        {
+            return dbSet.AsNoTracking();
+        }
     }
 }

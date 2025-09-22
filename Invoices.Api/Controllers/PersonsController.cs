@@ -55,5 +55,12 @@ namespace Invoices.Api.Controllers
 
             return Ok(updated);
         }
+
+        [HttpGet("statistics")]
+        public ActionResult<IEnumerable<PersonStatisticsDto>> GetPersonStatistics()
+        {
+            IEnumerable<PersonStatisticsDto> personStatistics = personManager.GetPersonStatistics();
+            return Ok(personStatistics);
+        }
     }
 }
