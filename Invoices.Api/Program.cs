@@ -103,8 +103,8 @@ if (app.Environment.IsDevelopment())
                 Country = Country.CZECHIA,
                 Note = "Testovací osoba",
                 Hidden = false,
-                Sales = null,
-                Purchases = null
+                Sales = new List<Invoice>(),
+                Purchases = new List<Invoice>()
             },
             new Person
             {
@@ -122,8 +122,8 @@ if (app.Environment.IsDevelopment())
                 Country = Country.SLOVAKIA,
                 Note = "Druhá osoba",
                 Hidden = false,
-                Sales = null,
-                Purchases = null
+                Sales = new List<Invoice>(),
+                Purchases = new List<Invoice>()
             }
         );
 
