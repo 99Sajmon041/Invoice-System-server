@@ -1,69 +1,42 @@
-using Invoices.Data.Repositories;
-using System.Text.Json;
 using Invoices.Api;
+using Invoices.Api.Interfaces;
 using Invoices.Api.Managers;
 using Invoices.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using Invoices.Data.Entities.Enums;
 using Invoices.Data.Entities;
-using System.Reflection;
-using Invoices.Api.Interfaces;
+using Invoices.Data.Entities.Enums;
 using Invoices.Data.Interfaces;
+using Invoices.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Any;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
-
-// Swagger – jednoduchá konfigurace + mapování DateOnly/TimeOnly
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(opt =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Invoices.Api", Version = "v1" });
-
-    // Swaggeru vysvìtlíme, jak popsat DateOnly/TimeOnly    
-    options.MapType<DateOnly>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date",
-        Example = new OpenApiString("2025-01-31")
-    });
-    options.MapType<TimeOnly>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "time",
-        Example = new OpenApiString("13:45:00")
-    });
-
-    // XML komentáøe pøipoj jen pokud soubor existuje (jinak by to spadlo)
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        options.IncludeXmlComments(xmlPath);
-    }
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Invoices.Api", Version = "v1" });
 });
 
+// Controllers + JSON
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+    .AddJsonOptions(opt =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-
-        // Pokud bys vracel EF entity s cykly, tohle zabrání 500
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
+// Dependenci Injections
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPersonManager, PersonManager>();
 builder.Services.AddScoped<IInvoiceManager, InvoiceManager>();
 
-builder.Services.AddAutoMapper(cfg =>
-{
-    cfg.AddProfile<AutoMapperProfile>();
-});
+// AutoMapper
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<AutoMapperProfile>());
 
 // Pøipojení k databázi, viz soubor appsettings.json
 builder.Services.AddDbContext<AppDbContext>(options =>

@@ -13,7 +13,6 @@ namespace Invoices.Api.Managers
     public class InvoiceManager : IInvoiceManager
     {
         private readonly IInvoiceRepository invoiceRepository;
-        private readonly IPersonRepository personRepository;
         private readonly IMapper mapper;
 
         /// <summary>
@@ -21,12 +20,10 @@ namespace Invoices.Api.Managers
         /// </summary>
         /// <param name="invoiceRepository">Repozitář pro práci s fakturami.</param>
         /// <param name="mapper">Služba AutoMapper pro mapování entit a DTO.</param>
-        /// <param name="personRepository">Repozitář pro práci s osobami.</param>
-        public InvoiceManager(IInvoiceRepository invoiceRepository, IMapper mapper, IPersonRepository personRepository)
+        public InvoiceManager(IInvoiceRepository invoiceRepository, IMapper mapper)
         {
             this.invoiceRepository = invoiceRepository;
             this.mapper = mapper;
-            this.personRepository = personRepository;
         }
 
         /// <summary>
@@ -138,19 +135,8 @@ namespace Invoices.Api.Managers
 
             return new InvoiceStatisticsDto
             {
-                /// <summary>
-                /// Součet částek všech faktur v aktuálním roce.
-                /// </summary>
                 CurrentYearSum = invoices.Where(x => x.Issued.Year == DateTime.Now.Year).Sum(x => x.Price),
-
-                /// <summary>
-                /// Součet částek všech faktur za celé období.
-                /// </summary>
                 AllTimeSum = invoices.Sum(x => x.Price),
-
-                /// <summary>
-                /// Celkový počet faktur.
-                /// </summary>
                 InvoicesCount = invoices.Count()
             };
         }
