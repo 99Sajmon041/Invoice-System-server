@@ -1,6 +1,7 @@
 ﻿using Invoices.Api.Interfaces;
 using Invoices.Api.Models;
 using Invoices.Data.Entities.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,6 +11,7 @@ namespace Invoices.Api.Controllers
     /// API kontroler pro načítání faktur podle identifikačního čísla subjektu.
     /// Umožňuje získat prodeje i nákupy pro dané IČ.
     /// </summary>
+    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class IdentificationController : ControllerBase
@@ -31,6 +33,7 @@ namespace Invoices.Api.Controllers
         /// <param name="identificationNumber">Identifikační číslo subjektu.</param>
         /// <param name="limit">Maximální počet vrácených položek.</param>
         /// <returns>Kolekce <see cref="InvoiceDto"/> prodejních faktur.</returns>
+
         [HttpGet("{identificationNumber}/sales")]
         public ActionResult<IEnumerable<InvoiceDto>> Sales(
             [FromRoute] string identificationNumber,

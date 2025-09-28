@@ -6,8 +6,12 @@ using Invoices.Data.Entities;
 using Invoices.Data.Entities.Enums;
 using Invoices.Data.Interfaces;
 using Invoices.Data.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -18,9 +22,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Invoices.Api", Version = "v1" });
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Zadej: Bearer {token}"
+    });
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement {
+      {
+        new OpenApiSecurityScheme { Reference = new OpenApiReference {
+            Type = ReferenceType.SecurityScheme, Id = "Bearer"} }, new string[] {}
+      }
+    });
 });
 
-// Controllers + JSON
+// Kontrolery + JSON
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
@@ -29,11 +48,63 @@ builder.Services.AddControllers()
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
-// Dependenci Injections
+// Dependency Injections
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPersonManager, PersonManager>();
 builder.Services.AddScoped<IInvoiceManager, InvoiceManager>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+//Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
+{
+    opt.Password.RequireDigit = true;
+    opt.Password.RequiredLength = 8;
+    opt.Password.RequireNonAlphanumeric = false;
+    opt.Password.RequireUppercase = false;
+    opt.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+var jwt = builder.Configuration.GetSection("Jwt");
+var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer("Bearer", opts =>
+    {
+        opts.TokenValidationParameters = new()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwt["Issuer"],
+            ValidAudience = jwt["Audience"],
+            IssuerSigningKey = key
+        };
+    });
+
+//Authoriztation polocies
+builder.Services.AddAuthorization(opt =>
+{
+    opt.AddPolicy(nameof(Policy.CanWrite), p => p.RequireRole(nameof(Roles.Admin), nameof(Roles.Client)));
+    opt.AddPolicy(nameof(Policy.CanDelete), p => p.RequireRole(nameof(Roles.Admin)));
+});
+
+//CORS pro SPA
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("spa", p =>
+        p.WithOrigins("http://localhost:5173", "http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
 
 // AutoMapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<AutoMapperProfile>());
@@ -104,8 +175,17 @@ if (app.Environment.IsDevelopment())
     }
 }
 
+app.UseCors("spa");
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+//Vytvoøení uživatele pro spuštìní aplikace. Standardnì by po pøihlášení byl vyzván ke zmìnì hesla, v této aplikaci tomu tak není.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await Seed.EnsureAsync(services, "admin@admin.cz", "Admin1234!");
+}
 
 app.Run();

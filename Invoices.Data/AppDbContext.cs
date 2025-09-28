@@ -1,4 +1,5 @@
 ﻿using Invoices.Data.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invoices.Data
@@ -7,7 +8,7 @@ namespace Invoices.Data
     /// Entity Framework Core databázový kontext pro aplikaci Invoices.
     /// Obsahuje DbSety hlavních entit (Person, Invoice) a konfiguraci modelu (indexy, FK vztahy).
     /// </summary>
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         /// <summary>
         /// Vytvoří instanci kontextu s dodanými možnostmi (např. connection string, provider).

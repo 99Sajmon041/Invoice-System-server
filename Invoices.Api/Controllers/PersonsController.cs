@@ -1,5 +1,7 @@
 ﻿using Invoices.Api.Interfaces;
 using Invoices.Api.Models;
+using Invoices.Data.Entities.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invoices.Api.Controllers
@@ -27,6 +29,7 @@ namespace Invoices.Api.Controllers
         /// Vrátí všechny neskryté osoby.
         /// </summary>
         /// <returns>Kolekce <see cref="PersonDto"/>.</returns>
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<PersonDto>> GetAllPersons()
         {
@@ -39,6 +42,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="dto">Data osoby.</param>
         /// <returns>HTTP 201 s vytvořenou osobou a Location hlavičkou.</returns>
+        [Authorize(Policy = nameof(Policy.CanWrite))]
         [HttpPost]
         public ActionResult<PersonDto> AddPerson([FromBody] PersonDto dto)
         {
@@ -52,6 +56,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="id">Identifikátor osoby.</param>
         /// <returns>HTTP 204 při úspěchu nebo HTTP 404, pokud nenalezena.</returns>
+        [Authorize(Policy = nameof(Policy.CanDelete))]
         [HttpDelete("{id}")]
         public IActionResult DeletePerson(int id)
         {
@@ -63,6 +68,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="id">Identifikátor osoby.</param>
         /// <returns><see cref="PersonDto"/> nebo HTTP 404, pokud nenalezena.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public ActionResult<PersonDto> GetPersonById(int id)
         {
@@ -79,6 +85,7 @@ namespace Invoices.Api.Controllers
         /// <param name="id">Identifikátor původní osoby.</param>
         /// <param name="dto">Aktualizovaná data osoby.</param>
         /// <returns>Aktualizovaná osoba nebo HTTP 404, pokud původní osoba nebyla nalezena.</returns>
+        [Authorize(Policy = nameof(Policy.CanWrite))]
         [HttpPut("{id}")]
         public ActionResult<PersonDto> UpdatePersonById(int id, [FromBody] PersonDto dto)
         {
@@ -93,6 +100,7 @@ namespace Invoices.Api.Controllers
         /// Vrátí statistiky osob (identifikátor, název a tržby).
         /// </summary>
         /// <returns>Kolekce <see cref="PersonStatisticsDto"/>.</returns>
+        [AllowAnonymous]
         [HttpGet("statistics")]
         public ActionResult<IEnumerable<PersonStatisticsDto>> GetPersonStatistics()
         {

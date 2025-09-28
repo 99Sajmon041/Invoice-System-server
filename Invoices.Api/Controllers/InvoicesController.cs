@@ -1,5 +1,7 @@
 ﻿using Invoices.Api.Interfaces;
 using Invoices.Api.Models;
+using Invoices.Data.Entities.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invoices.Api.Controllers
@@ -33,6 +35,7 @@ namespace Invoices.Api.Controllers
         /// <param name="maxPrice">Maximální cena (volitelné).</param>
         /// <param name="limit">Maximální počet vrácených položek.</param>
         /// <returns>Kolekce <see cref="InvoiceDto"/> odpovídající filtrům.</returns>
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<InvoiceDto>> GetAllInvoices(
             [FromQuery] int? buyerId,
@@ -51,6 +54,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="dto">Data pro vytvoření faktury.</param>
         /// <returns>HTTP 201 s vytvořenou fakturou a Location hlavičkou.</returns>
+        [Authorize(Policy = nameof(Policy.CanWrite))]
         [HttpPost]
         public ActionResult AddInvoice([FromBody] InvoiceCreateUpdateDto dto)
         {
@@ -63,6 +67,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="id">Identifikátor faktury.</param>
         /// <returns><see cref="InvoiceDto"/> nebo HTTP 404, pokud nenalezena.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public ActionResult<InvoiceDto> GetInvoiceById(int id)
         {
@@ -79,6 +84,7 @@ namespace Invoices.Api.Controllers
         /// <param name="id">Identifikátor faktury.</param>
         /// <param name="dto">Data pro aktualizaci faktury.</param>
         /// <returns>Aktualizovaná faktura nebo HTTP 404, pokud nenalezena.</returns>
+        [Authorize(Policy = nameof(Policy.CanWrite))]
         [HttpPut("{id}")]
         public ActionResult UpdateInvoiceById(int id, [FromBody] InvoiceCreateUpdateDto dto)
         {
@@ -94,6 +100,7 @@ namespace Invoices.Api.Controllers
         /// </summary>
         /// <param name="id">Identifikátor faktury.</param>
         /// <returns>HTTP 204 při úspěchu nebo HTTP 404, pokud nenalezena.</returns>
+        [Authorize(Policy = nameof(Policy.CanDelete))]
         [HttpDelete("{id}")]
         public ActionResult DeleteInvoiceById(int id)
         {
@@ -107,6 +114,7 @@ namespace Invoices.Api.Controllers
         /// Vrátí souhrnné statistiky nad fakturami.
         /// </summary>
         /// <returns><see cref="InvoiceStatisticsDto"/> se souhrnnými hodnotami.</returns>
+        [AllowAnonymous]
         [HttpGet("statistics")]
         public ActionResult<InvoiceStatisticsDto> GetStatistics()
         {
